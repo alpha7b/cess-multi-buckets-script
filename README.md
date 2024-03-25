@@ -6,5 +6,5 @@
 ## 运行
 
 ```
-source createDir.sh
+source setup_cess_containers.sh
 ```
