@@ -21,5 +21,6 @@ tar -xvf v0.5.5.tar.gz
 cd cess-nodeadm-0.5.5/
 ./install.sh
 
-# 启动配置
-sudo cess config set
+# 启动配置及cess chain
+echo -e "rpcnode\n\n\n" | sudo cess config set
+sudo cess start
