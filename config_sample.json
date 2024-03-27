@@ -1,1 +1,18 @@
+{
+  "dbs": {
+    "db1": ["disk1", "disk2"],
+    "db2": ["disk3", "disk4"]
+  },
+  "mnemonics": {
+    "disk1": "",
+    "disk2": "",
+    "disk3": "",
+    "disk4": ""
+  },
+  "settings": {
+    "EarningsAcc": "",
+    "UseSpace": 320,
+    "UseCpu": 2
+  }
+}
 
