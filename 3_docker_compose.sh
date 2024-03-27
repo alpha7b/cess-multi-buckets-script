@@ -64,5 +64,9 @@ EOF
 
 echo "docker-compose.yaml has been generated."
 
-# start docker compose
+# 删除watchtower容器，避免compose出错
+docker stop watchtower
+docker rm watchtower
+
+# 启动compose
 docker compose up -d
