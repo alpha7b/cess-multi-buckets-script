@@ -1,7 +1,12 @@
 # 使用脚本部署cess多节点
 
+## 下载脚本到节点服务器
+```
+git clone https://github.com/alpha7b/cess-multi-buckets-script.git
+```
+
 ## 配置文件
-按config_sample.json里的格式填写，文件名重命名为config.json
+将config_sample.json重命名为config.json，里面信息按需要填写。
 
 ## 运行
 
