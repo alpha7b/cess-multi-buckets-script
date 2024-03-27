@@ -21,7 +21,11 @@ source create_config_yaml.sh
 ```
 
 4. 创建docker-compose文件
+
+watchtower容器在cess start时已经自动创建过了，需要先删掉，不然docker compose行再次创建会有冲突报错。
 ```
+docker stop watchtower
+docker rm watchtower
 source create_docker_compose_yaml.sh
 ```
 
