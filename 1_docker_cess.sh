@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# 保存当前工作目录
+START_DIR=$(pwd)
+
 # 安装docker
 sudo apt-get update
 sudo apt-get install ca-certificates curl tree -y
@@ -18,15 +21,15 @@ sudo apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin 
 cess stop
 cess down
 
+# 删除旧的容器
+docker stop $(docker ps -aq --filter ancestor=cesslab/cess-bucket:testnet) && docker rm $(docker ps -aq --filter ancestor=cesslab/cess-bucket:testnet) || true
+docker stop $(docker ps -aq --filter ancestor=containrrr/watchtower) && docker rm $(docker ps -aq --filter ancestor=containrrr/watchtower) || true
+
 # 删除docker镜像
 docker rmi cesslab/cess-bucket:testnet || true
 docker rmi cesslab/config-gen:testnet || true
 docker rmi cesslab/cess-chain:testnet || true
 docker rmi containrrr/watchtower || true
-
-# 删除watchtower容器
-docker stop watchtower || true
-docker rm watchtower || true
 
 # 删除cess文件
 rm -rf /cess || true
@@ -44,3 +47,6 @@ cd cess-nodeadm-0.5.5/
 # 启动配置及cess chain
 echo -e "rpcnode\n\n\n" | sudo cess config set
 sudo cess start
+
+# 脚本命令执行完毕，返回到开始的目录
+cd "$START_DIR"
