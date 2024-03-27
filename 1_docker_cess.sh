@@ -24,6 +24,10 @@ docker rmi cesslab/config-gen:testnet || true
 docker rmi cesslab/cess-chain:testnet || true
 docker rmi containrrr/watchtower || true
 
+# 删除watchtower容器
+docker stop watchtower || true
+docker rm watchtower || true
+
 # 删除cess文件
 rm -rf /cess || true
 rm -rf /mnt/db* || true
