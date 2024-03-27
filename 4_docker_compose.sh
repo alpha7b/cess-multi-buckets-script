@@ -63,3 +63,6 @@ cat >> $output <<EOF
 EOF
 
 echo "docker-compose.yaml has been generated."
+
+# start docker compose
+docker compose up -d
