@@ -22,6 +22,7 @@ cess stop
 cess down
 
 # 删除旧的容器
+service docker start
 docker stop $(docker ps -aq --filter ancestor=cesslab/cess-bucket:testnet) && docker rm $(docker ps -aq --filter ancestor=cesslab/cess-bucket:testnet) || true
 docker stop $(docker ps -aq --filter ancestor=containrrr/watchtower) && docker rm $(docker ps -aq --filter ancestor=containrrr/watchtower) || true
 
@@ -38,6 +39,8 @@ rm -rf /mnt/disk* || true
 rm -rf /opt/cess || true
 
 # 安装cess客户端
+service docker start
+
 cd / && mkdir cess && cd /cess
 wget https://github.com/CESSProject/cess-nodeadm/archive/v0.5.5.tar.gz
 tar -xvf v0.5.5.tar.gz
