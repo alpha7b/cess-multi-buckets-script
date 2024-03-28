@@ -5,39 +5,26 @@
 git clone https://github.com/alpha7b/cess-multi-buckets-script.git
 ```
 
-## 配置文件
-将config_sample.json重命名为config.json，里面信息按需要填写。
+## 准备
+1. 准备好钱包及测试币
+2. 将config_sample.json重命名为config.json，里面信息按需要填写
 
 ## 运行
 
 1. 安装docker和cess客户端
 ```
-source install_docker_cess.sh
+source 1_docker_cess.sh
 ```
 
-2. 启动rpc节点
+2. 创建文件夹及config.yaml
 ```
-cess start
-```
-
-3. 创建文件夹及config.yaml
-```
-source create_config_yaml.sh
+source 1_config_yaml.sh
 ```
 
-4. 创建docker-compose文件
-
-watchtower容器在cess start时已经自动创建过了，需要先删掉，不然docker compose行再次创建会有冲突报错。
-```
-docker stop watchtower
-docker rm watchtower
-source create_docker_compose_yaml.sh
-```
-
-5. rpc节点同步完成后，启动docker节点
+3. 创建docker-compose
 
 ```
-docker compose up -d
+source 3_docker_compose.sh
 ```
 
 # 查看
