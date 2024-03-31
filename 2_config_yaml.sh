@@ -63,3 +63,5 @@ jq -r '.dbs | to_entries[] | .key as $db | .value[] | "\($db)/\(.)"' config.json
 done
 
 echo "文件夹、文件创建完毕，config.yaml已填充。"
+
+tree
