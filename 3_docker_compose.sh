@@ -39,28 +39,28 @@ jq -r '.dbs | to_entries[] | .key as $db | .value[] | "\($db)/\(.)"' config.json
 EOF
 done
 
-# 添加watchtower服务至docker-compose.yaml
-cat >> $output <<EOF
-  watchtower:
-    image: containrrr/watchtower
-    container_name: watchtower
-    network_mode: host
-    restart: always
-    volumes:
-      - '/var/run/docker.sock:/var/run/docker.sock'
-    command:
-      - '--cleanup'
-      - '--interval'
-      - '300'
-      - '--enable-lifecycle-hooks'
-      - chain
-      - bucket
-    logging:
-      driver: json-file
-      options:
-        max-size: 100m
-        max-file: '7'
-EOF
+# # 添加watchtower服务至docker-compose.yaml
+# cat >> $output <<EOF
+#   watchtower:
+#     image: containrrr/watchtower
+#     container_name: watchtower
+#     network_mode: host
+#     restart: always
+#     volumes:
+#       - '/var/run/docker.sock:/var/run/docker.sock'
+#     command:
+#       - '--cleanup'
+#       - '--interval'
+#       - '300'
+#       - '--enable-lifecycle-hooks'
+#       - chain
+#       - bucket
+#     logging:
+#       driver: json-file
+#       options:
+#         max-size: 100m
+#         max-file: '7'
+# EOF
 
 echo "docker-compose.yaml has been generated."
 
