@@ -34,7 +34,10 @@ docker rmi containrrr/watchtower || true
 
 # 删除cess文件
 rm -rf /cess || true
-rm -rf /mnt/db* || true
+rm -rf /mnt/db1/* || true
+rm -rf /mnt/db2/* || true
+rm -rf /mnt/db3/* || true
+rm -rf /mnt/db4/* || true
 rm -rf /mnt/disk* || true
 rm -rf /opt/cess || true
 
