@@ -64,4 +64,4 @@ done
 
 echo "文件夹、文件创建完毕，config.yaml已填充。"
 
-tree
+tree /mnt
