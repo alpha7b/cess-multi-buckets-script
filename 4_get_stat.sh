@@ -14,10 +14,10 @@ for container in $(docker ps --format '{{.Names}}' | grep '^bucket_'); do
         continue
     fi
     
-    # 精确提取validated space的值
-    validated_space_gib=$(echo "$output" | awk '/validated space/{print $4}')
+    # 尝试提取validated space的值
+    validated_space_line=$(echo "$output" | grep 'validated space')
+    validated_space_gib=$(echo "$validated_space_line" | tr -s ' ' | cut -d ' ' -f 4)
     
-    # 检查提取的值是否为空或非数字
     if ! [[ $validated_space_gib =~ ^[0-9]+(\.[0-9]+)?$ ]]; then
         echo "Failed to extract validated space for $container: $validated_space_gib"
         continue
