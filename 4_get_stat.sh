@@ -7,8 +7,20 @@ total_validated_space_gib=0
 for container in $(docker ps --format '{{.Names}}' | grep '^bucket_'); do
     echo "Checking validated space for $container..."
     
-    # 使用docker exec获取容器的validated space
-    validated_space_gib=$(docker exec $container cess-bucket --config /opt/bucket/config.yaml stat | grep 'validated space' | awk '{print $4}')
+    # 使用docker exec获取容器的validated space，并尝试捕捉可能的错误
+    output=$(docker exec $container cess-bucket --config /opt/bucket/config.yaml stat 2>&1)
+    if [[ $? -ne 0 ]]; then
+        echo "Failed to execute command on $container: $output"
+        continue
+    fi
+    
+    validated_space_gib=$(echo "$output" | grep 'validated space' | awk '{print $4}')
+    if ! [[ $validated_space_gib =~ ^[0-9]+(\.[0-9]+)?$ ]]; then
+        echo "Failed to extract validated space for $container: $validated_space_gib"
+        continue
+    fi
+    
+    echo "Validated space for $container: $validated_space_gib GiB"
     
     # 累加到总验证空间
     total_validated_space_gib=$(echo "$total_validated_space_gib + $validated_space_gib" | bc)
