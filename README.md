@@ -27,8 +27,11 @@ source 1_config_yaml.sh
 source 3_docker_compose.sh
 ```
 
-# 查看
-````
+## 查看
+
+### 查看单个节点信息
+
+```
 # 查看container log
 docker ps
 docker logs <container_name> -f -n 20
@@ -40,5 +43,8 @@ docker exec <STORAGE_CONTAINER_NAME> cess-bucket --config /opt/bucket/config.yam
 docker exec <STORAGE_CONTAINER_NAME> cess-bucket --config /opt/bucket/config.yaml reward
 ```
 
-
+## 查看当前机器所有节点的数据
+```
+source 4_get_stat.sh
+```
 
