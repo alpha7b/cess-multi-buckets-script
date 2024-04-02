@@ -5,7 +5,7 @@ total_validated_space_gib=0
 
 # Loop through all containers starting with "bucket_"
 for container in $(docker ps --format '{{.Names}}' | grep '^bucket_'); do
-    echo "Checking validated space for $container..."
+    # echo "Checking validated space for $container..."
     
     # Attempt to execute the command and capture its output, focusing on error catching
     output=$(docker exec $container cess-bucket --config /opt/bucket/config.yaml stat 2>&1)
