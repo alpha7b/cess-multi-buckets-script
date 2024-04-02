@@ -14,9 +14,9 @@ for container in $(docker ps --format '{{.Names}}' | grep '^bucket_'); do
         continue
     fi
     
-    validated_space_gib=$(echo "$output" | grep 'validated space' | awk '{print $4}')
-    if ! [[ $validated_space_gib =~ ^[0-9]+(\.[0-9]+)?$ ]]; then
-        echo "Failed to extract validated space for $container: $validated_space_gib"
+    validated_space_gib=$(echo "$output" | grep 'validated space' | sed -n 's/.*validated space.*\([0-9]*\.[0-9]*\).*GiB.*/\1/p')
+    if [ -z "$validated_space_gib" ]; then
+        echo "Failed to extract validated space for $container"
         continue
     fi
     
