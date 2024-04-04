@@ -7,7 +7,7 @@ total_validated_space_gib=0
 declare -a containers
 
 # Fill the array with container names starting with "bucket_" and sort them
-readarray -t containers < <(docker ps --format '{{.Names}}' | grep '^bucket_' | sort)
+readarray -t containers < <(docker ps --format '{{.Names}}' | grep '^bucket_' | sort -V)
 
 # Loop through all sorted containers
 for container in "${containers[@]}"; do
