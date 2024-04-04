@@ -3,8 +3,14 @@
 # Initialize total validated space variable
 total_validated_space_gib=0
 
-# Loop through all containers starting with "bucket_"
-for container in $(docker ps --format '{{.Names}}' | grep '^bucket_'); do
+# Initialize an array to hold the container names
+declare -a containers
+
+# Fill the array with container names starting with "bucket_" and sort them
+readarray -t containers < <(docker ps --format '{{.Names}}' | grep '^bucket_' | sort)
+
+# Loop through all sorted containers
+for container in "${containers[@]}"; do
     # echo "Checking validated space for $container..."
     
     # Attempt to execute the command and capture its output, focusing on error catching
