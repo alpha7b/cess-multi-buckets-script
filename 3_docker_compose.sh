@@ -1,72 +1,66 @@
 #!/bin/bash
 
-# 定义输出文件名
-output="docker-compose.yaml"
-
-# 开始写入docker-compose文件的基本信息
-cat > $output <<EOF
-version: '3'
-name: cess-storage
-services:
-EOF
-
-# 读取每个db和其下的disk
-jq -r '.dbs | to_entries[] | .key as $db | .value[] | "\($db)/\(.)"' config.json | while read path; do
-    disk=$(basename $path)
-    bucket_number=$(echo $disk | grep -o -E '[0-9]+')
-    container_name="bucket_$bucket_number"
-    db_folder=$(dirname $path | tr -d './')
-
-    # 写入每个bucket的配置到docker-compose.yaml
-    cat >> $output <<EOF
-  $container_name:
-    image: 'cesslab/cess-bucket:testnet'
-    network_mode: host
-    restart: always
-    volumes:
-      - '/mnt/$path/bucket:/opt/bucket'
-      - '/mnt/$path/storage/:/opt/bucket-disk'
-    command:
-      - run
-      - '-c'
-      - /opt/bucket/config.yaml
-    logging:
-      driver: json-file
-      options:
-        max-size: 500m
-    container_name: $container_name
-
-EOF
+# 从config.json读取并创建文件夹结构
+jq -r '.dbs | to_entries[] | .key as $db | .value[] | "\($db)/\(.)"' config.json | while read line; do
+    # 使用绝对路径创建文件夹
+    mkdir -p "/mnt/${line}/bucket" "/mnt/${line}/storage"
+    if [ ! -d "/mnt/${line}/bucket" ]; then
+        echo "创建目录失败：/mnt/${line}/bucket"
+        exit 1
+    fi
+    if [ ! -d "/mnt/${line}/storage" ]; then
+        echo "创建目录失败：/mnt/${line}/storage"
+        exit 1
+    fi
 done
 
-# # 添加watchtower服务至docker-compose.yaml
-# cat >> $output <<EOF
-#   watchtower:
-#     image: containrrr/watchtower
-#     container_name: watchtower
-#     network_mode: host
-#     restart: always
-#     volumes:
-#       - '/var/run/docker.sock:/var/run/docker.sock'
-#     command:
-#       - '--cleanup'
-#       - '--interval'
-#       - '300'
-#       - '--enable-lifecycle-hooks'
-#       - chain
-#       - bucket
-#     logging:
-#       driver: json-file
-#       options:
-#         max-size: 100m
-#         max-file: '7'
-# EOF
+# 定义配置文件内容函数
+create_config_yaml() {
+  local full_disk_path="/mnt/$1" # 使用绝对路径
+  local disk_name=$(basename $full_disk_path) # 从完整路径中提取disk名称
+  local mnemonic=$(jq -r ".mnemonics.${disk_name}" config.json) # 使用提取的disk名称从config.json中读取助记词
+  local settings=$(jq -r ".settings" config.json) # 从config.json读取设置
+  local earnings_acc=$(echo $settings | jq -r ".EarningsAcc")
+  local use_space=$(echo $settings | jq -r ".UseSpace")
+  local use_cpu=$(echo $settings | jq -r ".UseCpu")
+  local port_number=$((4000 + ${disk_name#*disk})) # 使用 disk 编号来动态设置端口号
 
-echo "docker-compose.yaml has been generated."
+  cat > "${full_disk_path}/bucket/config.yaml" << EOF
+# The rpc endpoint of the chain node
+Rpc:
+  - "ws://127.0.0.1:9944/"
+  - "wss://testnet-rpc0.cess.cloud/ws/"
+  - "wss://testnet-rpc1.cess.cloud/ws/"
+  - "wss://testnet-rpc2.cess.cloud/ws/"
+# Bootstrap Nodes
+Boot:
+  - "_dnsaddr.boot-bucket-testnet.cess.cloud"
+# Signature account mnemonic
+Mnemonic: "${mnemonic}"
+# Staking account
+StakingAcc: ""
+# Earnings account
+EarningsAcc: "${earnings_acc}"
+# Service workspace
+Workspace: "/opt/bucket-disk"
+# P2P communication port
+Port: ${port_number}
+# Maximum space used, the unit is GiB
+UseSpace: ${use_space}
+# Number of cpu's used
+UseCpu: ${use_cpu}
+# Priority tee list address
+TeeList:
+  - "127.0.0.1:8080"
+  - "127.0.0.1:8081"
+EOF
+}
 
-# # 删除watchtower容器，避免compose出错
-# docker stop watchtower
-# docker rm watchtower
+# 循环创建config.yaml文件
+jq -r '.dbs | to_entries[] | .key as $db | .value[] | "\($db)/\(.)"' config.json | while read line; do
+    create_config_yaml $line
+done
 
-# 启动compose
-docker compose up -d
+echo "文件夹、文件创建完毕，config.yaml已填充。"
+
+tree /mnt
