@@ -1,67 +1,62 @@
 #!/bin/bash
 
-# 从config.json读取并创建文件夹结构
-jq -r '.dbs | to_entries[] | .key as $db | .value[] | "\($db)/\(.)"' config.json | while read line; do
-    # 使用绝对路径创建文件夹
-    mkdir -p "/mnt/${line}/bucket" "/mnt/${line}/storage"
-    if [ ! -d "/mnt/${line}/bucket" ]; then
-        echo "创建目录失败：/mnt/${line}/bucket"
-        exit 1
-    fi
-    if [ ! -d "/mnt/${line}/storage" ]; then
-        echo "创建目录失败：/mnt/${line}/storage"
-        exit 1
-    fi
-done
+# 保存当前工作目录
+START_DIR=$(pwd)
 
-# 定义配置文件内容函数
-create_config_yaml() {
-  local full_disk_path="/mnt/$1" # 使用绝对路径
-  local disk_name=$(basename $full_disk_path) # 从完整路径中提取disk名称
-  local mnemonic=$(jq -r ".mnemonics.${disk_name}" config.json) # 使用提取的disk名称从config.json中读取助记词
-  local settings=$(jq -r ".settings" config.json) # 从config.json读取设置
-  local earnings_acc=$(echo $settings | jq -r ".EarningsAcc")
-  local use_space=$(echo $settings | jq -r ".UseSpace")
-  local use_cpu=$(echo $settings | jq -r ".UseCpu")
-  local port_number=$((4000 + ${disk_name##*disk})) # 使用 disk 编号来动态设置端口号，注意这里改为使用 ${disk_name##*disk} 来提取编号
-  echo $port_number
-  
-  cat > "${full_disk_path}/bucket/config.yaml" << EOF
-# The rpc endpoint of the chain node
-Rpc:
-  - "ws://127.0.0.1:9944/"
-  - "wss://testnet-rpc0.cess.cloud/ws/"
-  - "wss://testnet-rpc1.cess.cloud/ws/"
-  - "wss://testnet-rpc2.cess.cloud/ws/"
-# Bootstrap Nodes
-Boot:
-  - "_dnsaddr.boot-bucket-testnet.cess.cloud"
-# Signature account mnemonic
-Mnemonic: "${mnemonic}"
-# Staking account
-StakingAcc: ""
-# Earnings account
-EarningsAcc: "${earnings_acc}"
-# Service workspace
-Workspace: "/opt/bucket-disk"
-# P2P communication port
-Port: ${port_number}
-# Maximum space used, the unit is GiB
-UseSpace: ${use_space}
-# Number of cpu's used
-UseCpu: ${use_cpu}
-# Priority tee list address
-TeeList:
-  - "127.0.0.1:8080"
-  - "127.0.0.1:8081"
-EOF
-}
+# 安装docker
+sudo apt-get update
+sudo apt-get install ca-certificates curl tree -y
+sudo install -m 0755 -d /etc/apt/keyrings
+sudo curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc
+sudo chmod a+r /etc/apt/keyrings/docker.asc
 
-# 循环创建config.yaml文件
-jq -r '.dbs | to_entries[] | .key as $db | .value[] | "\($db)/\(.)"' config.json | while read line; do
-    create_config_yaml $line
-done
+echo \
+  "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu \
+  $(. /etc/os-release && echo "$VERSION_CODENAME") stable" | \
+  sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+sudo apt-get update
+sudo apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin -y
 
-echo "文件夹、文件创建完毕，config.yaml已填充。"
+# 删除旧的cess文件及服务
+cess stop
+cess down
 
-tree /mnt
+# 删除旧的容器
+sleep 30
+sudo service docker start
+sleep 30
+sudo service docker start
+
+docker stop $(docker ps -aq --filter ancestor=cesslab/cess-bucket:testnet) && docker rm $(docker ps -aq --filter ancestor=cesslab/cess-bucket:testnet) || true
+docker stop $(docker ps -aq --filter ancestor=containrrr/watchtower) && docker rm $(docker ps -aq --filter ancestor=containrrr/watchtower) || true
+
+# 删除docker镜像
+docker rmi cesslab/cess-bucket:testnet || true
+docker rmi cesslab/config-gen:testnet || true
+docker rmi cesslab/cess-chain:testnet || true
+docker rmi containrrr/watchtower || true
+
+# 删除cess文件
+rm -rf /cess || true
+rm -rf /mnt/db1/* || true
+rm -rf /mnt/db2/* || true
+rm -rf /mnt/db3/* || true
+rm -rf /mnt/db4/* || true
+rm -rf /mnt/disk* || true
+rm -rf /opt/cess || true
+
+# 安装cess客户端
+service docker start
+
+cd / && mkdir cess && cd /cess
+wget https://github.com/CESSProject/cess-nodeadm/archive/v0.5.5.tar.gz
+tar -xvf v0.5.5.tar.gz
+cd cess-nodeadm-0.5.5/
+./install.sh
+
+# 启动配置及cess chain
+echo -e "rpcnode\n\n\n" | sudo cess config set
+sudo cess start
+
+# 脚本命令执行完毕，返回到开始的目录
+cd "$START_DIR"
