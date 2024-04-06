@@ -23,8 +23,9 @@ create_config_yaml() {
   local earnings_acc=$(echo $settings | jq -r ".EarningsAcc")
   local use_space=$(echo $settings | jq -r ".UseSpace")
   local use_cpu=$(echo $settings | jq -r ".UseCpu")
-  local port_number=$((4000 + ${disk_name#*disk})) # 使用 disk 编号来动态设置端口号
-
+  local port_number=$((4000 + ${disk_name##*disk})) # 使用 disk 编号来动态设置端口号，注意这里改为使用 ${disk_name##*disk} 来提取编号
+  echo $port_number
+  
   cat > "${full_disk_path}/bucket/config.yaml" << EOF
 # The rpc endpoint of the chain node
 Rpc:
