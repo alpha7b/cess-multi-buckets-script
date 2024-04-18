@@ -48,3 +48,8 @@ docker exec <STORAGE_CONTAINER_NAME> cess-bucket --config /opt/bucket/config.yam
 source 4_get_stat.sh
 ```
 
+## 并行删除文件
+
+```
+find /path/to/your/folder -type f | parallel rm
+```
