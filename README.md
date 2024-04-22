@@ -47,6 +47,10 @@ docker exec <STORAGE_CONTAINER_NAME> cess-bucket --config /opt/bucket/config.yam
 ```
 source 4_get_stat.sh
 ```
+## 删除bucket container
+```
+docker stop $(docker ps -aq --filter ancestor=cesslab/cess-bucket:testnet) && docker rm $(docker ps -aq --filter ancestor=cesslab/cess-bucket:testnet)
+```
 
 ## 并行删除文件
 
